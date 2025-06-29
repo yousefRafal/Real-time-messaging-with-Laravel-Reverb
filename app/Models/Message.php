@@ -24,6 +24,8 @@ class Message extends Model
 {
     use HasFactory;
 
+    protected $connection = 'chat';
+
     /**
      * The attributes that are mass assignable.
      *

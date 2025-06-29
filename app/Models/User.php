@@ -17,6 +17,8 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $connection = 'chat';
+
     protected $fillable = [
         'name',
         'email',
