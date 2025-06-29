@@ -78,33 +78,48 @@
             const errorToast = document.getElementById('errorToast');
             const errorMessage = document.getElementById('errorMessage');
             
-            let channel = 'connect';
+            let channel = 'general'; // تغيير من 'connect' إلى 'general'
             let isConnected = false;
 
             // Initialize Echo connection
-            if (window.Echo) {
-                // window.Echo.connector.socket.on('connect', () => {
-                    isConnected = true;
-                    connectionStatus.textContent = 'Connected';
-                    connectionStatus.previousElementSibling.classList.replace('bg-yellow-400', 'bg-green-400');
-                // });
+               // Initialize Echo connection
+               try{
+                window.Echo = new Echo({
+                    broadcaster: 'pusher',
+                    key: '6fd0240d3f0724aded6f',
+                    cluster: 'eu',
+                    encrypted: true
+                });
+               }catch(e){
+                console.log(e);
+               }
+    if (window.Echo) {
+            window.Echo.connector?.socket?.on('connect', () => {
+                isConnected = true;
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.previousElementSibling.classList.replace('bg-yellow-400', 'bg-green-400');
 
-                // window.Echo.connector.socket.on('disconnect', () => {
-                    // isConnected = false;
-                    // connectionStatus.textContent = 'Disconnected';
-                    // connectionStatus.previousElementSibling.classList.replace('bg-green-400', 'bg-yellow-400');
-                // });
-
-                // Listen for messages
+                // Subscribe to channel after connection
                 window.Echo.channel(`chat.${channel}`)
                     .listen('.message.sent', (event) => {
-                        
-                        console.log(event);
+                        console.log('New message:', event);
                         appendMessage(event);
                     });
-            } else {
-                showError('Chat service not available');
-            }
+            });
+
+            window.Echo.connector?.socket?.on('disconnect', () => {
+                isConnected = false;
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.previousElementSibling.classList.replace('bg-green-400', 'bg-yellow-400');
+            });
+
+            window.Echo.connector.socket.on('error', (error) => {
+                console.error('Connection error:', error);
+                showError('Connection error: ' + error.message);
+            });
+        } else {
+            showError('Chat service not available');
+        }
 
             // Load existing messages
             fetchMessages();
@@ -160,7 +175,7 @@
             }
 
             function appendMessage(message) {
-                const isCurrentUser = message.user_id === 'current_user'; // Replace with actual user check
+                const isCurrentUser = message.user_id === 1; // Replace with actual user check
                 
                 const messageElement = document.createElement('div');
                 messageElement.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;

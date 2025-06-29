@@ -14,20 +14,20 @@ window.Echo = new Echo({
     wsHost: import.meta.env.VITE_REVERB_HOST || window.location.hostname,
     wsPort: import.meta.env.VITE_REVERB_PORT || 8080,
     wssPort: import.meta.env.VITE_REVERB_PORT || 443,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME || 'https') === 'https',
+    forceTLS: (import.meta.env.VITE_REVERB_SCHEME || 'http') === 'http',
     enabledTransports: ['ws', 'wss'],
     disableStats: true,
 });
 
 // // Connection event handlers
-// window.Echo.connector.socket.on('connect', () => {
-//     console.log('✅ Connected to Reverb server');
-// });
+window.Echo.connection.on('connected', () => {
+    console.log('✅ Connected to Reverb server');
+});
 
-// window.Echo.connector.socket.on('disconnect', () => {
-//     console.log('❌ Disconnected from Reverb server');
-// });
+window.Echo.connection.on('disconnected', () => {
+    console.log('❌ Disconnected from Reverb server');
+});
 
-// window.Echo.connector.socket.on('error', (error) => {
-//     console.error('🔥 Reverb connection error:', error);
-// });
+window.Echo.connection.on('error', (error) => {
+    console.error('🔥 Reverb connection error:', error);
+});
