@@ -12,3 +12,10 @@ window.Echo = new Echo({
     forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'http') === 'http',
     enabledTransports: ['ws', 'wss'],
 });
+
+
+window.Echo.channel('chat.general')
+    .listen('ChatMessage', (e) => {
+        console.log('New message:', e)
+        console.log(e)
+    });

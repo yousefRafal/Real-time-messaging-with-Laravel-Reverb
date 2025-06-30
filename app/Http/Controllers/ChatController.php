@@ -23,7 +23,7 @@ class ChatController extends Controller
      */
     public function sendMessage(SendMessageRequest $request): JsonResponse
     {
-        dd($request);
+        // dd($request);
         try {
             // Get validated data with defaults
             $data = $request->getValidatedData();

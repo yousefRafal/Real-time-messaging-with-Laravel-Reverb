@@ -106,8 +106,8 @@ class Message extends Model
             'user_name' => $this->user_name ?? 'Anonymous',
             'user_id' => $this->user_id,
             'channel' => $this->channel,
-            'timestamp' => $this->created_at->toISOString(),
-            'formatted_time' => $this->created_at->format('H:i'),
+            'timestamp' => $this->created_at,
+            // 'formatted_time' => $this->,
             'metadata' => $this->metadata,
         ];
     }
