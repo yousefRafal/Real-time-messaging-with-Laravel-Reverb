@@ -38,6 +38,7 @@
                         <input 
                             type="text" 
                             id="messageInput"
+                            name = "messageInput"
                             class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Type your message..."
                             autocomplete="off"
@@ -78,82 +79,84 @@
             const errorToast = document.getElementById('errorToast');
             const errorMessage = document.getElementById('errorMessage');
             
-            let channel = 'general'; // تغيير من 'connect' إلى 'general'
-            let isConnected = false;
+            let channel = 'general';
+            let isConnected = true;
 
             // Initialize Echo connection
-               // Initialize Echo connection
-               try{
-                window.Echo = new Echo({
-                    broadcaster: 'pusher',
-                    key: '6fd0240d3f0724aded6f',
-                    cluster: 'eu',
-                    encrypted: true
+            if (window.Echo) {
+                window.Echo.connector.socket?.on('connect', () => {
+                    isConnected = true;
+                    connectionStatus.textContent = 'Connected';
+                    connectionStatus.previousElementSibling.classList.replace('bg-yellow-400', 'bg-green-400');
                 });
-               }catch(e){
-                console.log(e);
-               }
-    if (window.Echo) {
-            window.Echo.connector?.socket?.on('connect', () => {
-                isConnected = true;
-                connectionStatus.textContent = 'Connected';
-                connectionStatus.previousElementSibling.classList.replace('bg-yellow-400', 'bg-green-400');
 
-                // Subscribe to channel after connection
-                window.Echo.channel(`chat.${channel}`)
-                    .listen('.message.sent', (event) => {
-                        console.log('New message:', event);
-                        appendMessage(event);
+                window.Echo.connector.socket?.on('disconnect', () => {
+                    isConnected = false;
+                    connectionStatus.textContent = 'Disconnected';
+                    connectionStatus.previousElementSibling.classList.replace('bg-green-400', 'bg-yellow-400');
+                });
+
+                // Listen for messages
+                window.Echo.channel('chat.general')
+                    .listen('ChatMessage', ({ message }) => {
+                        console.log(" New message received:", message);
+                        event(new ChatMessage(message));
+                        appendMessage(message);
                     });
+
+
+            } else {
+                        window.Echo.channel('chat.general')
+            .listen('ChatMessage', ({ message }) => {
+                console.log(" New message received:", message);
+                appendMessage(message);
+                event(new ChatMessage(message));
             });
 
-            window.Echo.connector?.socket?.on('disconnect', () => {
-                isConnected = false;
-                connectionStatus.textContent = 'Disconnected';
-                connectionStatus.previousElementSibling.classList.replace('bg-green-400', 'bg-yellow-400');
-            });
 
-            window.Echo.connector.socket.on('error', (error) => {
-                console.error('Connection error:', error);
-                showError('Connection error: ' + error.message);
-            });
-        } else {
-            showError('Chat service not available');
-        }
+                showError('Chat service not available');
+            }
 
             // Load existing messages
             fetchMessages();
 
             // Handle message submission
             messageForm.addEventListener('submit', async (e) => {
-                
                 e.preventDefault();
-                
+
                 const content = messageInput.value.trim();
                 if (!content || !isConnected) return;
 
                 try {
+                    const token = document.querySelector('meta[name="csrf-token"]').content;
                     const response = await fetch('/api/chat/send', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            'X-CSRF-TOKEN': token
                         },
-                        body: JSON.stringify({ 
+                        body: JSON.stringify({
                             content,
-                            channel
-                        })
+                            channel,
+                        }),
                     });
 
                     if (!response.ok) {
-
-                        throw new Error('Failed to send message');
+                        if (response.status === 419) {
+                            throw new Error('CSRF token mismatch. Please refresh the page.');
+                        }
+                        throw new Error('Failed to send message '.response);
                     }
 
                     messageInput.value = '';
 
                 } catch (error) {
-                    showError('Failed to send message. Please try again.');
+                    if (error.message.includes('CSRF token mismatch')) {
+                        showError('Session expired. Please refresh the page.');
+                    } else {
+                        console.log(error);
+                        showError(error);
+                    }
                 }
             });
 
@@ -175,7 +178,7 @@
             }
 
             function appendMessage(message) {
-                const isCurrentUser = message.user_id === 1; // Replace with actual user check
+                const isCurrentUser = message.user_id === 'current_user'; // Replace with actual user check
                 
                 const messageElement = document.createElement('div');
                 messageElement.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`;

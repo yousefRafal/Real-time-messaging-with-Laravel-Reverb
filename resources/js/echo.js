@@ -14,8 +14,10 @@ window.Echo = new Echo({
 });
 
 
-window.Echo.channel('chat.general')
-    .listen('ChatMessage', (e) => {
-        console.log('New message:', e)
-        console.log(e)
-    });
+document.addEventListener('DOMContentLoaded', function () {
+        window.Echo.channel('chat.general')
+            .listen('message.send', (e) => {
+                console.log('New message:', e)
+                console.log(e)
+            });
+        });

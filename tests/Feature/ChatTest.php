@@ -141,6 +141,7 @@ class ChatTest extends TestCase
 
         $response = $this->postJson('/send-message', [
             'content' => 'Legacy message test'
+            
         ]);
 
         $response->assertStatus(201);

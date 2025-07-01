@@ -8,12 +8,17 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 window.Echo = new Echo({
     broadcaster: 'pusher',
-    key: import.meta.env.VITE_PUSHER_APP_KEY,
-    wsHost: window.location.hostname,
-    wsPort: 443,
-    wssPort: 443,
+    key: '6fd0240d3f0724aded6f',
+    wsHost: 'realtime-pusher.ably.io',
+    wsPort: import.meta.env.VITE_PUSHER_PORT ?? 80,
+    wssPort: import.meta.env.VITE_PUSHER_PORT ?? 443,
+    forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
+    enabledTransports: ['ws', 'wss'],
+
     disableStats: true,
     encrypted: true,
+    cluster: 'eu',//added this line
+
 }); 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

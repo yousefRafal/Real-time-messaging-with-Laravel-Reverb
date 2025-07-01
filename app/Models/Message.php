@@ -103,11 +103,14 @@ class Message extends Model
         return [
             'id' => $this->id,
             'content' => $this->content,
-            'user_name' => $this->user_name ?? 'Anonymous',
-            'user_id' => $this->user_id,
+        
+            'user' => [
+                'name' => $this->user_name ?? 'Anonymous',
+                'id' => $this->user_id,
+            ],
             'channel' => $this->channel,
-            'timestamp' => $this->created_at,
-            // 'formatted_time' => $this->,
+            'timestamp' => $this->created_at->timestamp,
+            'formattedTime' => $this->created_at->format('Y-m-d H:i:s'),
             'metadata' => $this->metadata,
         ];
     }
